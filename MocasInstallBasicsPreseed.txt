@@ -101,6 +101,6 @@ d-i finish-install/reboot_in_progress note
 d-i preseed/late_command string \
     echo "gsd ALL=(ALL) NOPASSWD: ALL" > /target/etc/sudoers.d/gsd;sync ; \
     chmod 0440 /target/etc/sudoers.d/gsd ; \
-    wget http://fragmentized.net/maas-new.sh -O /target/root/maas.sh ; \
-    in-target /bin/sh /root/maas.sh {{ email }}; \
+    wget https://gitlab.lsd.di.uminho.pt/faclc/MocasScripts/blob/master/maas-new-JVM-MVN-screen.sh -O /target/root/maas-new-JVM-MVN-screen.sh ; \
+    in-target /bin/sh /root/maas-new-JVM-MVN-screen.sh {{ email }}; \
     true
