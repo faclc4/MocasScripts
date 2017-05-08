@@ -1,0 +1,106 @@
+# Localization
+# Preseeding only locale sets language, country and locale.
+d-i debian-installer/locale string en_US
+
+# Keyboard selection
+# Disable automatic (interactive) keymap detection
+d-i console-setup/ask_detect boolean false
+d-i debian-installer/keymap select pt
+d-i keymap select pt-latin9
+d-i keyboard-configuration/layoutcode string jp
+d-i keyboard-configuration/modelcode pt-latin9
+d-i keyboard-configuration/xkb-keymap select pt-latin9
+
+# Network configuration
+# d-i netcfg/get_hostname string
+# d-i netcfg/get_domain string unassigned-domain
+
+# Mirror settings
+d-i mirror/country string manual
+d-i mirror/http/hostname  string mirrors.up.pt
+d-i mirror/http/directory string /ubuntu
+d-i mirror/http/proxy string
+
+### Clock and time zone setup
+# Controls whether or not the hardware clock is set to UTC.
+d-i clock-setup/utc boolean true
+
+# You may set this to any valid setting for $TZ; see the contents of
+# /usr/share/zoneinfo/ for valid values.
+d-i time/zone string Europe/Lisbon
+
+# Controls whether to use NTP to set the clock during the install
+d-i clock-setup/ntp boolean true
+
+# Account setup
+# To create a normal user account.
+d-i passwd/user-fullname string user Grupo de Sistemas Distribuidos
+d-i passwd/username string gsd
+
+# Normal user's password, either in clear text
+d-i passwd/user-password password 123456
+d-i passwd/user-password-again password 123456
+d-i user-setup/allow-password-weak boolean true
+
+# Set to true if you want to encrypt the first user's home directory.
+d-i user-setup/encrypt-home boolean false
+
+### Partitioning
+d-i partman-auto/method string lvm
+# d-i partman-auto/init_automatically_partition select biggest_free
+d-i partman/eacommand string debconf-set partman-auto/disk `list-devices disk | head -n1`
+
+# You can choose one of the three predefined partitioning recipes:
+# - atomic: all files in one partition
+# - home:   separate /home partition
+# - multi:  separate /home, /usr, /var, and /tmp partitions
+d-i partman-auto-lvm/guided_size string max
+d-i partman-auto-lvm/new_vg_name string system
+d-i partman-auto/choose_recipe select atomic
+d-i partman/default_filesystem string ext4
+
+# This makes partman automatically partition without confirmation, provided
+# that you told it what to do using one of the methods above.
+d-i partman-lvm/device_remove_lvm boolean true
+d-i partman-lvm/device_remove_lvm_span boolean true
+d-i partman-md/device_remove_md boolean true
+d-i partman-lvm/confirm boolean true
+d-i partman-lvm/confirm_nooverwrite boolean true
+d-i partman-partitioning/confirm_write_new_label boolean true
+d-i partman/choose_partition select Finish
+d-i partman/confirm_nooverwrite boolean true
+d-i partman-basicmethods/method_only boolean false
+d-i partman/confirm boolean true
+
+# Package selection
+tasksel tasksel/first multiselect
+
+# Individual additional packages to install
+d-i pkgsel/include string openssh-server vim-nox ethtool openntpd
+
+# Whether to upgrade packages after debootstrap.
+# Allowed values: none, safe-upgrade, full-upgrade
+d-i pkgsel/upgrade select none
+
+# Policy for applying updates. May be "none" (no automatic updates),
+# "unattended-upgrades" (install security updates automatically), or
+# "landscape" (manage system with Landscape).
+d-i pkgsel/update-policy select none
+
+### Boot loader installation
+# Grub is the default boot loader (for x86).
+d-i grub-installer/only_debian boolean true
+d-i debian-installer/add-kernel-opts string net.ifnames=0 biosdevname=0
+
+### Finishing up the installation
+# Avoid that last message about the install being complete.
+d-i finish-install/reboot_in_progress note
+
+# Post scripts.
+# Executes late command and disables PXE.
+d-i preseed/late_command string \
+    echo "gsd ALL=(ALL) NOPASSWD: ALL" > /target/etc/sudoers.d/gsd;sync ; \
+    chmod 0440 /target/etc/sudoers.d/gsd ; \
+    wget http://fragmentized.net/maas-new.sh -O /target/root/maas.sh ; \
+    in-target /bin/sh /root/maas.sh {{ email }}; \
+    true
